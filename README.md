@@ -10,9 +10,5 @@ Current content
 ---------------
 *	**belposttrack.py**
 	Script to track parcels via BelPost (belpost.by). 
-	Format of the input file with track numbers:
-	```
-	Track Number1 - Item name1 - Extra description1
-	...
-	Track NumberN - Item nameN - Extra descriptionN	
-	```
+	Format of each line in the input file with track numbers:
+	``Track Number - Item name - Extra description``

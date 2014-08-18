@@ -149,10 +149,14 @@ def main():
         parser = ArgumentParser()
         parser.add_argument("-l", "--list", nargs='?', required=True, dest="tracks",
                             type=FileType('rt'), help="Plane text file with parcel tracks")
-        parser.add_argument("-o", "--output", nargs='?', dest="output",
-                            type=FileType('wt'), help="File name for report")
         parser.add_argument("-f", "--format", nargs='?', required=True, dest="format", choices=['table', 'plain'],
                             type=str, help="Output report format")
+
+        out_group = parser.add_mutually_exclusive_group()
+        out_group.add_argument("-o", "--output", nargs='?', dest="output",
+                            type=FileType('wt'), help="File name for report")
+        out_group.add_argument("-s", "--silent", dest="silent", action='store_true', default=False,
+                            help="Enable silent mode.")
 
         email_group = parser.add_argument_group('EMAIL Notification')
         email_group.add_argument("--to", nargs='?', dest="to_address", metavar='ADDRESS', type=str,
@@ -175,6 +179,8 @@ def main():
 
         if options.output is not None:
             file = options.output
+        elif options.silent:
+            file = None
 
         tracks = InParser(options.tracks)
         report = reports[options.format]
@@ -183,14 +189,16 @@ def main():
         for t in tracks:
             res = report(t, getter.get(t['track']))
             out += res
-            file.write(res)
-            file.flush()
+            if file is not None:
+                file.write(res)
+                file.flush()
 
         if options.to_address is not None:
             send_mail(options.to_address, options.from_address, options.smtp_server, options.smtp_port,
                       options.smtp_user, options.smtp_pass, options.smtp_tls, out, 'plain')
 
-        file.close()
+        if file is not None:
+            file.close()
 
     except (KeyboardInterrupt, SystemExit):
         print "Stopped"
